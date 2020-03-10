@@ -3,7 +3,7 @@
 # See https://github.com/TheLartians/CPM for usage and update instructions.
 #
 # MIT License
-# ----------- 
+# -----------
 #[[
   Copyright (c) 2019 Lars Melchior
 
@@ -47,19 +47,20 @@ option(CPM_USE_LOCAL_PACKAGES "Always try to use `find_package` to get dependenc
 option(CPM_LOCAL_PACKAGES_ONLY "Only use `find_package` to get dependencies" $ENV{CPM_LOCAL_PACKAGES_ONLY})
 option(CPM_DOWNLOAD_ALL "Always download dependencies from source" $ENV{CPM_DOWNLOAD_ALL})
 
-if("${PROJECT_NAME}" STREQUAL "${CMAKE_PROJECT_NAME}")
-set(CPM_VERSION ${CURRENT_CPM_VERSION} CACHE INTERNAL "")
-set(CPM_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
-set(CPM_PACKAGES "" CACHE INTERNAL "")
-set(CPM_DRY_RUN OFF CACHE INTERNAL "Don't download or configure dependencies (for testing)")
 
-if(DEFINED ENV{CPM_SOURCE_CACHE})
-  set(CPM_SOURCE_CACHE_DEFAULT $ENV{CPM_SOURCE_CACHE})
-else()
-  set(CPM_SOURCE_CACHE_DEFAULT OFF)
-endif()
+if("${PROJECT_NAME}" STREQUAL "")
+    set(CPM_VERSION ${CURRENT_CPM_VERSION} CACHE INTERNAL "")
+    set(CPM_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
+    set(CPM_PACKAGES "" CACHE INTERNAL "")
+    set(CPM_DRY_RUN OFF CACHE INTERNAL "Don't download or configure dependencies (for testing)")
 
-set(CPM_SOURCE_CACHE ${CPM_SOURCE_CACHE_DEFAULT} CACHE PATH "Directory to downlaod CPM dependencies")
+    if(DEFINED ENV{CPM_SOURCE_CACHE})
+      set(CPM_SOURCE_CACHE_DEFAULT $ENV{CPM_SOURCE_CACHE})
+    else()
+      set(CPM_SOURCE_CACHE_DEFAULT OFF)
+    endif()
+
+    set(CPM_SOURCE_CACHE ${CPM_SOURCE_CACHE_DEFAULT} CACHE PATH "Directory to downlaod CPM dependencies")
 endif()
 include(FetchContent)
 include(CMakeParseArguments)
@@ -90,7 +91,7 @@ function(CPMFindPackage)
   )
 
   cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "" ${ARGN})
-  
+
   if (CPM_DOWNLOAD_ALL)
     CPMAddPackage(${ARGN})
     cpm_export_variables()
@@ -134,16 +135,16 @@ function(CPMAddPackage)
       return()
     endif()
 
-    if(CPM_LOCAL_PACKAGES_ONLY) 
+    if(CPM_LOCAL_PACKAGES_ONLY)
       message(SEND_ERROR "CPM: ${CPM_ARGS_NAME} not found via find_package(${CPM_ARGS_NAME} ${CPM_ARGS_VERSION})")
     endif()
   endif()
 
   if (NOT DEFINED CPM_ARGS_VERSION)
-    if (DEFINED CPM_ARGS_GIT_TAG) 
+    if (DEFINED CPM_ARGS_GIT_TAG)
       cpm_get_version_from_git_tag("${CPM_ARGS_GIT_TAG}" CPM_ARGS_VERSION)
     endif()
-    if (NOT DEFINED CPM_ARGS_VERSION) 
+    if (NOT DEFINED CPM_ARGS_VERSION)
       set(CPM_ARGS_VERSION 0)
     endif()
   endif()
@@ -171,10 +172,9 @@ function(CPMAddPackage)
   if (${CPM_ARGS_NAME} IN_LIST CPM_PACKAGES)
     CPMGetPackageVersion(${CPM_ARGS_NAME} CPM_PACKAGE_VERSION)
     if(${CPM_PACKAGE_VERSION} VERSION_LESS ${CPM_ARGS_VERSION})
-        #get_target_property(VAR ${CPM_ARGS_NAME} VERSION)
-        message("version: ${PulseGenerator_VERSION}")
       message(WARNING "${CPM_INDENT} requires a newer version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
     endif()
+
     if(1)
         string (REGEX MATCH "[0-9]+" CPM_PACKAGE_VERSION_MAJOR "${CPM_PACKAGE_VERSION}")
         string (REGEX MATCH "[0-9]+" CPM_ARGS_VERSION_MAJOR "${CPM_ARGS_VERSION}")
@@ -182,6 +182,7 @@ function(CPMAddPackage)
             message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
         endif()
     endif()
+
     if (CPM_ARGS_OPTIONS)
       foreach(OPTION ${CPM_ARGS_OPTIONS})
         cpm_parse_option(${OPTION})
@@ -193,7 +194,7 @@ function(CPMAddPackage)
     cpm_fetch_package(${CPM_ARGS_NAME} ${DOWNLOAD_ONLY})
     cpm_get_fetch_properties(${CPM_ARGS_NAME})
     SET(${CPM_ARGS_NAME}_SOURCE_DIR "${${CPM_ARGS_NAME}_SOURCE_DIR}")
-    SET(${CPM_ARGS_NAME}_BINARY_DIR "${${CPM_ARGS_NAME}_BINARY_DIR}")  
+    SET(${CPM_ARGS_NAME}_BINARY_DIR "${${CPM_ARGS_NAME}_BINARY_DIR}")
     SET(${CPM_ARGS_NAME}_ADDED NO)
     cpm_export_variables()
     return()
@@ -237,31 +238,26 @@ function(CPMAddPackage)
     endif()
   endif()
 
-#message( "-*-*--*-*-*Compiling Version: ${${CPM_ARGS_NAME}_FIND_VERSION} of project ${CPM_ARGS_NAME} ${${CPM_ARGS_NAME}_VERSION} ${CPM_ARGS_VERSION}")
-message( "-*-*--*-*-* ${CPM_ARGS_NAME}_SOURCE_DIR : ${${CPM_ARGS_NAME}_SOURCE_DIR}")
-    #here i can check the local CMakeLists to retreive the version
-message("path:${${CPM_ARGS_NAME}_SOURCE_DIR}/CMakeLists.txt ")
-
-    # Read CMakeLists.txt for subproject and extract project() call(s) from it.
-    file(STRINGS "${${CPM_ARGS_NAME}_SOURCE_DIR}/CMakeLists.txt" project_calls REGEX "[ \t]*project\\(")
-    # For every project() call try to extract its VERSION option
-    # message("project_calls ${project_calls}")
-
-    # set(TESTSTRING "project(PulseGenerator VERSION 1.0.0)")
-     string(REGEX MATCH "[0123456789.]+" version_value "${project_calls}")
-     message( "test:${project_calls} result: ${version_value}")
-
-    if(version_value)
-        set(VERSION_VAR "${version_value}")
-    else()
-        message("WARNING: Cannot extract version for subproject '${CPM_ARGS_NAME}'")
-    endif()
-
-    message("VERSION_VAR:${VERSION_VAR}")
-
     #
   cpm_declare_fetch(${CPM_ARGS_NAME} ${CPM_ARGS_VERSION} ${PACKAGE_INFO} "${CPM_ARGS_UNPARSED_ARGUMENTS}" ${FETCH_CONTENT_DECLARE_EXTRA_OPTS})
   cpm_fetch_package(${CPM_ARGS_NAME} ${DOWNLOAD_ONLY})
+
+  if(TARGET ${CPM_ARGS_NAME})
+      get_target_property(_TARGET_TYPE ${CPM_ARGS_NAME} TYPE)
+      if(_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+          get_target_property(version_value ${CPM_ARGS_NAME} INTERFACE_VERSION)
+      elseif(_TARGET_TYPE STREQUAL "STATIC_LIBRARY")
+          get_target_property(version_value ${CPM_ARGS_NAME} VERSION)
+      else()
+          set(version_value "version_value-NOTFOUND")
+      endif()
+
+      if(NOT(version_value MATCHES ".*-NOTFOUND"))
+          set(CPM_ARGS_VERSION "${version_value}")
+          set("CPM_PACKAGE_${CPM_ARGS_NAME}_VERSION" ${CPM_ARGS_VERSION} CACHE INTERNAL "" )
+      endif()
+  endif()
+
   cpm_get_fetch_properties(${CPM_ARGS_NAME})
   SET(${CPM_ARGS_NAME}_ADDED YES)
   cpm_export_variables()
@@ -287,11 +283,11 @@ function(CPMGetPackageVersion PACKAGE OUTPUT)
   set(${OUTPUT} "${CPM_PACKAGE_${PACKAGE}_VERSION}" PARENT_SCOPE)
 endfunction()
 
-# declares a package in FetchContent_Declare 
+# declares a package in FetchContent_Declare
 function (cpm_declare_fetch PACKAGE VERSION INFO)
   message(STATUS "${CPM_INDENT} adding package ${PACKAGE}@${VERSION} (${INFO})")
 
-  if (${CPM_DRY_RUN}) 
+  if (${CPM_DRY_RUN})
     message(STATUS "${CPM_INDENT} package not declared (dry run)")
     return()
   endif()
@@ -304,7 +300,7 @@ endfunction()
 
 # returns properties for a package previously defined by cpm_declare_fetch
 function (cpm_get_fetch_properties PACKAGE)
-  if (${CPM_DRY_RUN}) 
+  if (${CPM_DRY_RUN})
     return()
   endif()
   FetchContent_GetProperties(${PACKAGE})
@@ -314,9 +310,9 @@ function (cpm_get_fetch_properties PACKAGE)
 endfunction()
 
 # downloads a previously declared package via FetchContent
-function (cpm_fetch_package PACKAGE DOWNLOAD_ONLY)  
+function (cpm_fetch_package PACKAGE DOWNLOAD_ONLY)
 
-  if (${CPM_DRY_RUN}) 
+  if (${CPM_DRY_RUN})
     message(STATUS "${CPM_INDENT} package ${PACKAGE} not fetched (dry run)")
     return()
   endif()
@@ -331,6 +327,7 @@ function (cpm_fetch_package PACKAGE DOWNLOAD_ONLY)
     FetchContent_MakeAvailable(${PACKAGE})
   endif()
   set(CPM_INDENT "${CPM_OLD_INDENT}")
+
 endfunction()
 
 # splits a package option
@@ -352,7 +349,7 @@ endfunction()
 # guesses the package version from a git tag
 function(cpm_get_version_from_git_tag GIT_TAG RESULT)
   string(LENGTH ${GIT_TAG} length)
-  if (length EQUAL 40) 
+  if (length EQUAL 40)
     # GIT_TAG is probably a git hash
     SET(${RESULT} 0 PARENT_SCOPE)
   else()
@@ -360,3 +357,4 @@ function(cpm_get_version_from_git_tag GIT_TAG RESULT)
     SET(${RESULT} ${CMAKE_MATCH_1} PARENT_SCOPE)
   endif()
 endfunction()
+
