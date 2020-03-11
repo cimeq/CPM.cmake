@@ -237,8 +237,7 @@ function(CPMAddPackage)
       set(PACKAGE_INFO "${PACKAGE_INFO} -> ${download_directory}")
     endif()
   endif()
-
-    #
+    
   cpm_declare_fetch(${CPM_ARGS_NAME} ${CPM_ARGS_VERSION} ${PACKAGE_INFO} "${CPM_ARGS_UNPARSED_ARGUMENTS}" ${FETCH_CONTENT_DECLARE_EXTRA_OPTS})
   cpm_fetch_package(${CPM_ARGS_NAME} ${DOWNLOAD_ONLY})
 
@@ -327,7 +326,6 @@ function (cpm_fetch_package PACKAGE DOWNLOAD_ONLY)
     FetchContent_MakeAvailable(${PACKAGE})
   endif()
   set(CPM_INDENT "${CPM_OLD_INDENT}")
-
 endfunction()
 
 # splits a package option
