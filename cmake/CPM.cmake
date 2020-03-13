@@ -70,6 +70,19 @@ if(NOT CPM_INDENT)
   set(CPM_INDENT "CPM:")
 endif()
 
+
+macro(overrideGitURL CPM_ARGS_UNPARSED_ARGUMENTS NEW_ORG)
+    list(FIND ${CPM_ARGS_UNPARSED_ARGUMENTS} "GIT_REPOSITORY" INDEX_FOUND)
+    if(NOT(${INDEX_FOUND} EQUAL -1))
+        math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
+        list(GET ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} CACHE_URL_REPO)
+        list(REMOVE_AT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND})
+        string(REGEX REPLACE "(^https://git.cimeq.qc.ca/)([^/]+)(/.*)" "\\1${${NEW_ORG}}\\3" CACHE_URL_REPO ${CACHE_URL_REPO})
+        list(INSERT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} ${CACHE_URL_REPO})
+    endif()
+endmacro()
+
+
 function(cpm_find_package NAME VERSION)
   string(REPLACE " " ";" EXTRA_ARGS "${ARGN}")
   find_package(${NAME} ${VERSION} ${EXTRA_ARGS})
@@ -168,6 +181,18 @@ function(CPMAddPackage)
   if (CPM_ARGS_GITLAB_REPOSITORY)
     list(APPEND CPM_ARGS_UNPARSED_ARGUMENTS GIT_REPOSITORY "https://gitlab.com/${CPM_ARGS_GITLAB_REPOSITORY}.git")
   endif()
+
+    if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake)
+        file(READ ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake CPM_OVERRIDE_LIST)
+        list(FIND CPM_OVERRIDE_LIST "OVERRIDE_GIT_ORGANIZATION" INDEX_FOUND)
+        if(NOT(${INDEX_FOUND} EQUAL -1))
+            math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
+            list(GET CPM_OVERRIDE_LIST ${INDEX_FOUND} OVERRIDE_GIT_ORGANIZATION)
+
+            overrideGitURL( CPM_ARGS_UNPARSED_ARGUMENTS OVERRIDE_GIT_ORGANIZATION)
+            message("CPM_ARGS_UNPARSED_ARGUMENTS: ${CPM_ARGS_UNPARSED_ARGUMENTS}end")
+        endif()
+    endif()
 
   if (${CPM_ARGS_NAME} IN_LIST CPM_PACKAGES)
     CPMGetPackageVersion(${CPM_ARGS_NAME} CPM_PACKAGE_VERSION)
