@@ -190,7 +190,6 @@ function(CPMAddPackage)
             list(GET CPM_OVERRIDE_LIST ${INDEX_FOUND} OVERRIDE_GIT_ORGANIZATION)
 
             overrideGitURL( CPM_ARGS_UNPARSED_ARGUMENTS OVERRIDE_GIT_ORGANIZATION)
-            message("CPM_ARGS_UNPARSED_ARGUMENTS: ${CPM_ARGS_UNPARSED_ARGUMENTS}end")
         endif()
     endif()
 
