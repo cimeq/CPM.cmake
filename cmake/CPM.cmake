@@ -30,6 +30,14 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 set(CURRENT_CPM_VERSION 0.17)
 
+macro(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CPM_ARGS_VERSION)
+  string (REGEX MATCH "[0-9]+" CPM_PACKAGE_VERSION_MAJOR "${CPM_PACKAGE_VERSION}")
+  string (REGEX MATCH "[0-9]+" CPM_ARGS_VERSION_MAJOR "${CPM_ARGS_VERSION}")
+  if(NOT(${CPM_PACKAGE_VERSION_MAJOR} VERSION_EQUAL ${CPM_ARGS_VERSION_MAJOR}))
+    message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
+  endif()
+endmacro()
+
 if(CPM_DIRECTORY)
   if(NOT ${CPM_DIRECTORY} MATCHES ${CMAKE_CURRENT_LIST_DIR})
     if (${CPM_VERSION} VERSION_LESS ${CURRENT_CPM_VERSION})
@@ -37,7 +45,7 @@ if(CPM_DIRECTORY)
 A dependency is using a more recent CPM version (${CURRENT_CPM_VERSION}) than the current project (${CPM_VERSION}). \
 It is recommended to upgrade CPM to the most recent version. \
 See https://github.com/TheLartians/CPM.cmake for more information."
-      )
+              )
     endif()
     return()
   endif()
@@ -49,18 +57,18 @@ option(CPM_DOWNLOAD_ALL "Always download dependencies from source" $ENV{CPM_DOWN
 
 
 if("${PROJECT_NAME}" STREQUAL "")
-    set(CPM_VERSION ${CURRENT_CPM_VERSION} CACHE INTERNAL "")
-    set(CPM_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
-    set(CPM_PACKAGES "" CACHE INTERNAL "")
-    set(CPM_DRY_RUN OFF CACHE INTERNAL "Don't download or configure dependencies (for testing)")
+  set(CPM_VERSION ${CURRENT_CPM_VERSION} CACHE INTERNAL "")
+  set(CPM_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
+  set(CPM_PACKAGES "" CACHE INTERNAL "")
+  set(CPM_DRY_RUN OFF CACHE INTERNAL "Don't download or configure dependencies (for testing)")
 
-    if(DEFINED ENV{CPM_SOURCE_CACHE})
-      set(CPM_SOURCE_CACHE_DEFAULT $ENV{CPM_SOURCE_CACHE})
-    else()
-      set(CPM_SOURCE_CACHE_DEFAULT OFF)
-    endif()
+  if(DEFINED ENV{CPM_SOURCE_CACHE})
+    set(CPM_SOURCE_CACHE_DEFAULT $ENV{CPM_SOURCE_CACHE})
+  else()
+    set(CPM_SOURCE_CACHE_DEFAULT OFF)
+  endif()
 
-    set(CPM_SOURCE_CACHE ${CPM_SOURCE_CACHE_DEFAULT} CACHE PATH "Directory to downlaod CPM dependencies")
+  set(CPM_SOURCE_CACHE ${CPM_SOURCE_CACHE_DEFAULT} CACHE PATH "Directory to downlaod CPM dependencies")
 endif()
 include(FetchContent)
 include(CMakeParseArguments)
@@ -72,14 +80,14 @@ endif()
 
 
 macro(overrideGitURL CPM_ARGS_UNPARSED_ARGUMENTS NEW_ORG)
-    list(FIND ${CPM_ARGS_UNPARSED_ARGUMENTS} "GIT_REPOSITORY" INDEX_FOUND)
-    if(NOT(${INDEX_FOUND} EQUAL -1))
-        math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
-        list(GET ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} CACHE_URL_REPO)
-        list(REMOVE_AT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND})
-        string(REGEX REPLACE "(^https://git.cimeq.qc.ca/)([^/]+)(/.*)" "\\1${${NEW_ORG}}\\3" CACHE_URL_REPO ${CACHE_URL_REPO})
-        list(INSERT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} ${CACHE_URL_REPO})
-    endif()
+  list(FIND ${CPM_ARGS_UNPARSED_ARGUMENTS} "GIT_REPOSITORY" INDEX_FOUND)
+  if(NOT(${INDEX_FOUND} EQUAL -1))
+    math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
+    list(GET ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} CACHE_URL_REPO)
+    list(REMOVE_AT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND})
+    string(REGEX REPLACE "(^https://git.cimeq.qc.ca/)([^/]+)(/.*)" "\\1${${NEW_ORG}}\\3" CACHE_URL_REPO ${CACHE_URL_REPO})
+    list(INSERT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} ${CACHE_URL_REPO})
+  endif()
 endmacro()
 
 
@@ -98,10 +106,10 @@ endfunction()
 # Find a package locally or fallback to CPMAddPackage
 function(CPMFindPackage)
   set(oneValueArgs
-    NAME
-    VERSION
-    FIND_PACKAGE_ARGUMENTS
-  )
+          NAME
+          VERSION
+          FIND_PACKAGE_ARGUMENTS
+          )
 
   cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "" ${ARGN})
 
@@ -124,20 +132,20 @@ endfunction()
 function(CPMAddPackage)
 
   set(oneValueArgs
-    NAME
-    VERSION
-    GIT_TAG
-    DOWNLOAD_ONLY
-    GITHUB_REPOSITORY
-    GITLAB_REPOSITORY
-    SOURCE_DIR
-    DOWNLOAD_COMMAND
-    FIND_PACKAGE_ARGUMENTS
-  )
+          NAME
+          VERSION
+          GIT_TAG
+          DOWNLOAD_ONLY
+          GITHUB_REPOSITORY
+          GITLAB_REPOSITORY
+          SOURCE_DIR
+          DOWNLOAD_COMMAND
+          FIND_PACKAGE_ARGUMENTS
+          )
 
   set(multiValueArgs
-    OPTIONS
-  )
+          OPTIONS
+          )
 
   cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
 
@@ -182,30 +190,23 @@ function(CPMAddPackage)
     list(APPEND CPM_ARGS_UNPARSED_ARGUMENTS GIT_REPOSITORY "https://gitlab.com/${CPM_ARGS_GITLAB_REPOSITORY}.git")
   endif()
 
-    if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake)
-        file(READ ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake CPM_OVERRIDE_LIST)
-        list(FIND CPM_OVERRIDE_LIST "OVERRIDE_GIT_ORGANIZATION" INDEX_FOUND)
-        if(NOT(${INDEX_FOUND} EQUAL -1))
-            math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
-            list(GET CPM_OVERRIDE_LIST ${INDEX_FOUND} OVERRIDE_GIT_ORGANIZATION)
+  if(EXISTS ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake)
+    file(READ ${CMAKE_SOURCE_DIR}/cmake/CPMoverride.cmake CPM_OVERRIDE_LIST)
+    list(FIND CPM_OVERRIDE_LIST "OVERRIDE_GIT_ORGANIZATION" INDEX_FOUND)
+    if(NOT(${INDEX_FOUND} EQUAL -1))
+      math(EXPR INDEX_FOUND "${INDEX_FOUND}+1")
+      list(GET CPM_OVERRIDE_LIST ${INDEX_FOUND} OVERRIDE_GIT_ORGANIZATION)
 
-            overrideGitURL( CPM_ARGS_UNPARSED_ARGUMENTS OVERRIDE_GIT_ORGANIZATION)
-        endif()
+      overrideGitURL( CPM_ARGS_UNPARSED_ARGUMENTS OVERRIDE_GIT_ORGANIZATION)
     endif()
+  endif()
 
   if (${CPM_ARGS_NAME} IN_LIST CPM_PACKAGES)
     CPMGetPackageVersion(${CPM_ARGS_NAME} CPM_PACKAGE_VERSION)
     if(${CPM_PACKAGE_VERSION} VERSION_LESS ${CPM_ARGS_VERSION})
       message(WARNING "${CPM_INDENT} requires a newer version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
     endif()
-
-    if(1)
-        string (REGEX MATCH "[0-9]+" CPM_PACKAGE_VERSION_MAJOR "${CPM_PACKAGE_VERSION}")
-        string (REGEX MATCH "[0-9]+" CPM_ARGS_VERSION_MAJOR "${CPM_ARGS_VERSION}")
-        if(NOT(${CPM_PACKAGE_VERSION_MAJOR} VERSION_EQUAL ${CPM_ARGS_VERSION_MAJOR}))
-            message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
-        endif()
-    endif()
+    cpm_check_major_version( ${CPM_INDENT} ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} ${CPM_ARGS_VERSION} )
 
     if (CPM_ARGS_OPTIONS)
       foreach(OPTION ${CPM_ARGS_OPTIONS})
@@ -261,28 +262,32 @@ function(CPMAddPackage)
       set(PACKAGE_INFO "${PACKAGE_INFO} -> ${download_directory}")
     endif()
   endif()
-    
+
   cpm_declare_fetch(${CPM_ARGS_NAME} ${CPM_ARGS_VERSION} ${PACKAGE_INFO} "${CPM_ARGS_UNPARSED_ARGUMENTS}" ${FETCH_CONTENT_DECLARE_EXTRA_OPTS})
   cpm_fetch_package(${CPM_ARGS_NAME} ${DOWNLOAD_ONLY})
 
   if(TARGET ${CPM_ARGS_NAME})
-      get_target_property(_TARGET_TYPE ${CPM_ARGS_NAME} TYPE)
-      if(_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
-          get_target_property(version_value ${CPM_ARGS_NAME} INTERFACE_VERSION)
-      elseif(_TARGET_TYPE STREQUAL "STATIC_LIBRARY")
-          get_target_property(version_value ${CPM_ARGS_NAME} VERSION)
-      else()
-          set(version_value "version_value-NOTFOUND")
-      endif()
+    get_target_property(_TARGET_TYPE ${CPM_ARGS_NAME} TYPE)
+    if(_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+      get_target_property(version_value ${CPM_ARGS_NAME} INTERFACE_VERSION)
+    elseif(_TARGET_TYPE STREQUAL "STATIC_LIBRARY")
+      get_target_property(version_value ${CPM_ARGS_NAME} VERSION)
+    else()
+      set(version_value "version_value-NOTFOUND")
+    endif()
 
-      if(NOT(version_value MATCHES ".*-NOTFOUND"))
-          set(CPM_ARGS_VERSION "${version_value}")
-          set("CPM_PACKAGE_${CPM_ARGS_NAME}_VERSION" ${CPM_ARGS_VERSION} CACHE INTERNAL "" )
-      endif()
+    if(NOT(version_value MATCHES ".*-NOTFOUND"))
+      #set(CPM_ARGS_VERSION "${version_value}")
+      set("CPM_PACKAGE_${CPM_ARGS_NAME}_VERSION" ${version_value} CACHE INTERNAL "" )
+    endif()
   endif()
 
   cpm_get_fetch_properties(${CPM_ARGS_NAME})
   SET(${CPM_ARGS_NAME}_ADDED YES)
+
+  CPMGetPackageVersion(${CPM_ARGS_NAME} CPM_PACKAGE_VERSION)
+  cpm_check_major_version( ${CPM_INDENT} ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} ${CPM_ARGS_VERSION} )
+
   cpm_export_variables()
 endfunction()
 
@@ -316,8 +321,8 @@ function (cpm_declare_fetch PACKAGE VERSION INFO)
   endif()
 
   FetchContent_Declare(
-    ${PACKAGE}
-    ${ARGN}
+          ${PACKAGE}
+          ${ARGN}
   )
 endfunction()
 
@@ -379,4 +384,3 @@ function(cpm_get_version_from_git_tag GIT_TAG RESULT)
     SET(${RESULT} ${CMAKE_MATCH_1} PARENT_SCOPE)
   endif()
 endfunction()
-
