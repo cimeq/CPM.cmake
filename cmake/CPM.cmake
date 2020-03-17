@@ -34,7 +34,9 @@ macro(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CPM_A
   string (REGEX MATCH "[0-9]+" CPM_PACKAGE_VERSION_MAJOR "${CPM_PACKAGE_VERSION}")
   string (REGEX MATCH "[0-9]+" CPM_ARGS_VERSION_MAJOR "${CPM_ARGS_VERSION}")
   if(NOT(${CPM_PACKAGE_VERSION_MAJOR} VERSION_EQUAL ${CPM_ARGS_VERSION_MAJOR}))
-    message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
+    if(NOT(${CPM_ARGS_VERSION}) EQUAL 0)
+      message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
+    endif()
   endif()
 endmacro()
 
