@@ -36,6 +36,7 @@ CPMAddPackage(
 
 The origin may be specified by a `GIT_REPOSITORY`, but other sources, such as direct URLs, are [also supported](https://cmake.org/cmake/help/v3.11/module/ExternalProject.html#external-project-definition).
 If `GIT_TAG` hasn't been explicitly specified it defaults to `v(VERSION)`, a common convention for git projects.
+On the other hand, if `VERSION` hasn't been explicitly specified, CPM can automatically identify the version from the git tag in some common cases. 
 `GIT_TAG` can also be set to a specific commit or a branch name such as `master` to always download the most recent version.
 The optional argument `FIND_PACKAGE_ARGUMENTS` can be specified to a string of parameters that will be passed to `find_package` if enabled (see below).
 
@@ -80,7 +81,7 @@ To add CPM to your current project, simply add `cmake/CPM.cmake` to your project
 
 ```bash
 mkdir -p cmake
-wget -O cmake/CPM.cmake https://raw.githubusercontent.com/TheLartians/CPM.cmake/master/cmake/CPM.cmake
+wget -O cmake/CPM.cmake https://github.com/TheLartians/CPM.cmake/releases/latest/download/CPM.cmake
 ```
 
 You can also use CMake to download CPM for you. See the [wiki](https://github.com/TheLartians/CPM/wiki/Adding-CPM) for more details.
