@@ -40,6 +40,22 @@ macro(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CPM_A
   endif()
 endmacro()
 
+macro(cpm_check_latest_version CPM_ARGS_NAME CPM_PACKAGE_VERSION)
+    execute_process(
+        COMMAND git -C ${CPM_ARGS_SOURCE_DIR} tag
+        OUTPUT_VARIABLE OUTPUT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    string(REPLACE "\n" ";" OUTPUT_VERSION "${OUTPUT_VERSION}")
+    list(REVERSE OUTPUT_VERSION)
+    list(GET OUTPUT_VERSION 0 OUTPUT_VERSION)
+
+    if( OUTPUT_VERSION VERSION_GREATER CPM_PACKAGE_VERSION)
+        message(AUTHOR_WARNING "A newer version is available for ${CPM_ARGS_NAME}: ${OUTPUT_VERSION}")
+    endif()
+endmacro()
+
 if(CPM_DIRECTORY)
   if(NOT ${CPM_DIRECTORY} MATCHES ${CMAKE_CURRENT_LIST_DIR})
     if (${CPM_VERSION} VERSION_LESS ${CURRENT_CPM_VERSION})
@@ -289,6 +305,8 @@ function(CPMAddPackage)
 
   CPMGetPackageVersion(${CPM_ARGS_NAME} CPM_PACKAGE_VERSION)
   cpm_check_major_version( ${CPM_INDENT} ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} ${CPM_ARGS_VERSION} )
+  cpm_check_latest_version( ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} )
+
 
   cpm_export_variables()
 endfunction()
