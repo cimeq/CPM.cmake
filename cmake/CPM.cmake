@@ -41,22 +41,24 @@ macro(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CPM_A
 endmacro()
 
 macro(cpm_check_latest_version CPM_ARGS_NAME CPM_PACKAGE_VERSION)
-    if(TARGET ${CPM_ARGS_NAME})
-        execute_process(
-            COMMAND git -C ${CPM_ARGS_SOURCE_DIR} tag
-            OUTPUT_VARIABLE OUTPUT_VERSION
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
+    if(CPM_ARGS_SOURCE_DIR)
+      if(TARGET ${CPM_ARGS_NAME})
+          execute_process(
+              COMMAND git -C ${CPM_ARGS_SOURCE_DIR} tag
+              OUTPUT_VARIABLE OUTPUT_VERSION
+              OUTPUT_STRIP_TRAILING_WHITESPACE
+          )
 
-        if(OUTPUT_VERSION)
-            string(REPLACE "\n" ";" OUTPUT_VERSION "${OUTPUT_VERSION}")
-            list(REVERSE OUTPUT_VERSION)
-            list(GET OUTPUT_VERSION 0 OUTPUT_VERSION)
+          if(OUTPUT_VERSION)
+              string(REPLACE "\n" ";" OUTPUT_VERSION "${OUTPUT_VERSION}")
+              list(REVERSE OUTPUT_VERSION)
+              list(GET OUTPUT_VERSION 0 OUTPUT_VERSION)
 
-            if( OUTPUT_VERSION VERSION_GREATER CPM_PACKAGE_VERSION)
-                message(AUTHOR_WARNING "A newer version is available for ${CPM_ARGS_NAME}: ${OUTPUT_VERSION}")
-            endif()
-        endif()
+              if( OUTPUT_VERSION VERSION_GREATER CPM_PACKAGE_VERSION)
+                  message(AUTHOR_WARNING "A newer version is available for ${CPM_ARGS_NAME}: ${OUTPUT_VERSION}")
+              endif()
+          endif()
+      endif()
     endif()
 endmacro()
 
