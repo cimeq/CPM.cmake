@@ -41,7 +41,7 @@ execute_process(
   RESULT_VARIABLE ret
 )
 
-ASSERT_EQUAL(${ret} "0")
+ASSERT_EQUAL(${ret} "1")
 
 if (NOT EXISTS "${CPM_SOURCE_CACHE_DIR}/fibonacci")
   ASSERTION_FAILED("fibonacci not in cache")
