@@ -41,7 +41,7 @@ execute_process(
   RESULT_VARIABLE ret
 )
 
-ASSERT_EQUAL(${ret} "1")
+ASSERT_EQUAL(${ret} "0")
 
 if (NOT EXISTS "${CPM_SOURCE_CACHE_DIR}/fibonacci")
   ASSERTION_FAILED("fibonacci not in cache")
@@ -66,7 +66,7 @@ execute_process(
   RESULT_VARIABLE ret
 )
 
-ASSERT_EQUAL(${ret} "0")
+ASSERT_EQUAL(${ret} "1")
 
 FILE(GLOB FIBONACCI_VERSIONs "${CPM_SOURCE_CACHE_DIR}/fibonacci/*")
 list(LENGTH FIBONACCI_VERSIONs FIBONACCI_VERSION_count)
