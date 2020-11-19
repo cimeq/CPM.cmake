@@ -348,6 +348,9 @@ function(CPMAddPackage)
   cpm_get_fetch_properties("${CPM_ARGS_NAME}")
 
   SET(${CPM_ARGS_NAME}_ADDED YES)
+  if(CPM_PACKAGE_VERSION)
+    cpm_check_latest_version( ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} )
+  endif()
   cpm_export_variables("${CPM_ARGS_NAME}")
 endfunction()
 
@@ -504,4 +507,26 @@ function(cpm_is_git_tag_commit_hash GIT_TAG RESULT)
       SET(${RESULT} 0 PARENT_SCOPE)
     endif()
   endif()
+endfunction()
+
+function(cpm_check_latest_version CPM_ARGS_NAME CPM_PACKAGE_VERSION)
+    if(CPM_ARGS_SOURCE_DIR)
+      if(TARGET ${CPM_ARGS_NAME})
+          execute_process(
+              COMMAND git -C ${CPM_ARGS_SOURCE_DIR} tag
+              OUTPUT_VARIABLE OUTPUT_VERSION
+              OUTPUT_STRIP_TRAILING_WHITESPACE
+          )
+
+          if(OUTPUT_VERSION)
+              string(REPLACE "\n" ";" OUTPUT_VERSION "${OUTPUT_VERSION}")
+              list(REVERSE OUTPUT_VERSION)
+              list(GET OUTPUT_VERSION 0 OUTPUT_VERSION)
+
+              if( OUTPUT_VERSION VERSION_GREATER CPM_PACKAGE_VERSION)
+                  message(AUTHOR_WARNING "A newer version is available for ${CPM_ARGS_NAME}: ${OUTPUT_VERSION}")
+              endif()
+          endif()
+      endif()
+    endif()
 endfunction()
