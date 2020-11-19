@@ -114,6 +114,34 @@ function(CPMCreateModuleFile Name)
   endif()
 endfunction()
 
+
+function(CPMAddPackageAndLink)
+  set(oneValueArgs
+          NAME
+          GIT_REPOSITORY
+          TARGET_LINK
+          )
+
+  CPMAddPackage( ${ARGN} )
+  cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
+
+#  string(REGEX MATCH "//[a-zA-Z].*/(.*)/.*.git" OPTION_KEY ${CPM_ARGS_GIT_REPOSITORY})
+#  set(ORG_NAME ${CMAKE_MATCH_1})
+#  target_link_libraries(${PROJECT_NAME} ${TARGET_LINK} "${ORG_NAME}::${CPM_ARGS_NAME}")
+
+  if(NOT CPM_ARGS_TARGET_LINK OR "${CPM_ARGS_TARGET_LINK}" EQUAL "PUBLIC")
+    target_link_libraries("${PROJECT_NAME}" PUBLIC "${CPM_ARGS_NAME}")
+    #  target_link_libraries(${PROJECT_NAME} PUBLIC "${ORG_NAME}::${CPM_ARGS_NAME}")
+  elseif("${CPM_ARGS_TARGET_LINK}" EQUAL "PRIVATE")
+    target_link_libraries("${PROJECT_NAME}" PRIVATE "${CPM_ARGS_NAME}")
+    #  target_link_libraries(${PROJECT_NAME} PRIVATE "${ORG_NAME}::${CPM_ARGS_NAME}")
+  elseif("${CPM_ARGS_TARGET_LINK}" EQUAL "INTERFACE")
+    target_link_libraries("${PROJECT_NAME}" INTERFACE "${CPM_ARGS_NAME}")
+    #  target_link_libraries(${PROJECT_NAME} INTERFACE "${ORG_NAME}::${CPM_ARGS_NAME}")
+  endif()
+endfunction()
+
+
 # Find a package locally or fallback to CPMAddPackage
 function(CPMFindPackage)
   set(oneValueArgs
