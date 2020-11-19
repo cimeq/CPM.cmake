@@ -562,7 +562,6 @@ function(cpm_is_git_tag_commit_hash GIT_TAG RESULT)
   endif()
 endfunction()
 
-<<<<<<< HEAD
 macro(prettify_cpm_add_package OUT_VAR IS_IN_COMMENT)
     set(oneValueArgs
       NAME
@@ -652,7 +651,8 @@ function(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CP
       message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
     endif()
   endif()
-=======
+endfunction()
+
 function(cpm_check_latest_version CPM_ARGS_NAME CPM_PACKAGE_VERSION)
     if(CPM_ARGS_SOURCE_DIR)
       if(TARGET ${CPM_ARGS_NAME})
@@ -673,5 +673,4 @@ function(cpm_check_latest_version CPM_ARGS_NAME CPM_PACKAGE_VERSION)
           endif()
       endif()
     endif()
->>>>>>> cimeq/checkLatestPkgVersionOnline
 endfunction()
