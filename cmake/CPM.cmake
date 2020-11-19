@@ -159,6 +159,9 @@ function(CPMCheckIfPackageAlreadyAdded CPM_ARGS_NAME CPM_ARGS_VERSION CPM_ARGS_O
     if("${CPM_PACKAGE_VERSION}" VERSION_LESS "${CPM_ARGS_VERSION}")
       message(WARNING "${CPM_INDENT} requires a newer version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
     endif()
+    if(CPM_PACKAGE_VERSION AND CPM_ARGS_VERSION)
+        cpm_check_major_version( ${CPM_INDENT} ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} ${CPM_ARGS_VERSION} )
+    endif()
     if (CPM_ARGS_OPTIONS)
       foreach(OPTION ${CPM_ARGS_OPTIONS})
         cpm_parse_option(${OPTION})
@@ -362,6 +365,9 @@ function(CPMAddPackage)
   cpm_get_fetch_properties("${CPM_ARGS_NAME}")
 
   SET(${CPM_ARGS_NAME}_ADDED YES)
+  if(CPM_PACKAGE_VERSION AND CPM_ARGS_VERSION)
+    cpm_check_major_version( ${CPM_INDENT} ${CPM_ARGS_NAME} ${CPM_PACKAGE_VERSION} ${CPM_ARGS_VERSION} )
+  endif()
   cpm_export_variables("${CPM_ARGS_NAME}")
 endfunction()
 
@@ -524,7 +530,6 @@ function(cpm_is_git_tag_commit_hash GIT_TAG RESULT)
   endif()
 endfunction()
 
-
 macro(prettify_cpm_add_package OUT_VAR IS_IN_COMMENT)
     set(oneValueArgs
       NAME
@@ -605,3 +610,13 @@ macro(overrideGitURL CPM_ARGS_UNPARSED_ARGUMENTS NEW_ORG)
     list(INSERT ${CPM_ARGS_UNPARSED_ARGUMENTS} ${INDEX_FOUND} ${CACHE_URL_REPO})
   endif()
 endmacro()
+
+function(cpm_check_major_version CPM_INDENT CPM_ARGS_NAME CPM_PACKAGE_VERSION CPM_ARGS_VERSION)
+  string (REGEX MATCH "[0-9]+" CPM_PACKAGE_VERSION_MAJOR "${CPM_PACKAGE_VERSION}")
+  string (REGEX MATCH "[0-9]+" CPM_ARGS_VERSION_MAJOR "${CPM_ARGS_VERSION}")
+  if(NOT(${CPM_PACKAGE_VERSION_MAJOR} VERSION_EQUAL ${CPM_ARGS_VERSION_MAJOR}))
+    if(NOT(${CPM_ARGS_VERSION}) EQUAL 0)
+      message(FATAL_ERROR "${CPM_INDENT} requires a differant major version of ${CPM_ARGS_NAME} (${CPM_ARGS_VERSION}) than currently included (${CPM_PACKAGE_VERSION}).")
+    endif()
+  endif()
+endfunction()
