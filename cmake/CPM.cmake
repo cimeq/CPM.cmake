@@ -345,6 +345,9 @@ function(CPMAddPackage)
 
   cpm_declare_fetch("${CPM_ARGS_NAME}" "${CPM_ARGS_VERSION}" "${PACKAGE_INFO}" "${CPM_ARGS_UNPARSED_ARGUMENTS}")
   cpm_fetch_package("${CPM_ARGS_NAME}" "${DOWNLOAD_ONLY}")
+
+  extract_version_from_target(${CPM_ARGS_NAME})
+
   cpm_get_fetch_properties("${CPM_ARGS_NAME}")
 
   SET(${CPM_ARGS_NAME}_ADDED YES)
@@ -562,3 +565,20 @@ macro(prettify_cpm_add_package OUT_VAR IS_IN_COMMENT)
           set(${OUT_VAR} "#    ${ARGN}\n")
       endif()
 endmacro()
+
+function(extract_version_from_target TARGET_ARGS_NAME)
+  if(TARGET ${TARGET_ARGS_NAME})
+    get_target_property(_TARGET_TYPE ${TARGET_ARGS_NAME} TYPE)
+    if(_TARGET_TYPE STREQUAL "INTERFACE_LIBRARY")
+      get_target_property(version_value ${TARGET_ARGS_NAME} INTERFACE_VERSION)
+    elseif(_TARGET_TYPE STREQUAL "STATIC_LIBRARY")
+      get_target_property(version_value ${TARGET_ARGS_NAME} VERSION)
+    else()
+      set(version_value "version_value-NOTFOUND")
+    endif()
+
+    if(NOT(version_value MATCHES ".*-NOTFOUND"))
+      set("CPM_PACKAGE_${TARGET_ARGS_NAME}_VERSION" ${version_value} CACHE INTERNAL "" )
+    endif()
+  endif()
+endfunction()
